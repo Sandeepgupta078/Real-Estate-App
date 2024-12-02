@@ -1,4 +1,4 @@
-# Real Estate Client
+# Real Estate App
 
 This is the client-side application for the Real Estate project.
 
