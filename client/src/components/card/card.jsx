@@ -6,7 +6,7 @@ const Card = ({item}) => {
   return (
     <div className='card'>
       <Link to={`/${item.id}`} className='imageContainer'>
-      <img src={item.img} alt="" />
+      <img src={item.images[0]} alt="" />
       </Link>
       <div className="textContainer">
         <h2 className='title'>
@@ -21,11 +21,11 @@ const Card = ({item}) => {
           <div className="features">
             <div className="feature">
               <img src="/bed.png" alt="" />
-              <span>{item.bedRooms} Bedrooms</span>
+              <span>{item.bedroom} Bedrooms</span>
             </div>
             <div className="feature">
               <img src="/bath.png" alt="" />
-              <span>{item.bathRooms} Bathrooms</span>
+              <span>{item.bathroom} Bathrooms</span>
             </div>
           </div>
           <div className="icons">

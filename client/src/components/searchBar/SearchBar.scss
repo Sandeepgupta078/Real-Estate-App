@@ -1,3 +1,5 @@
+@import "../../responsive.scss";
+
 .searchbar{
     justify-content: center;
     align-items: center;
@@ -57,6 +59,15 @@
             border-radius: 0 5px 5px 0;
             cursor: pointer;
             height: 64px;
+
+            @include sm{
+                padding: 10px;
+            }
+
+            img{
+                width: 24px;
+                height: 24px;
+            }
         }
     }
 }

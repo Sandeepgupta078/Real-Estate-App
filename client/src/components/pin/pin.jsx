@@ -1,7 +1,7 @@
 import React from 'react'
 import './pin.scss'
 import { Marker, Popup } from 'react-leaflet'
-import { Link, useNavigate } from 'react-router-dom'
+import { Link } from 'react-router-dom'
 import 'leaflet/dist/leaflet.css';
 import '../../lib/data'
 

@@ -1,14 +1,68 @@
-import React from 'react'
+import React, { useState } from 'react'
+import { useNavigate } from 'react-router-dom'
 import './newPostPage.scss'
 import ReactQuill from 'react-quill'
+import 'react-quill/dist/quill.snow.css';
+import CloudinaryUploadWidget from '../../components/uploadWidget/uploadWidget';
+import apiRequest from '../../lib/apiRequest';
+
 
 const newPostPage = () => {
+
+    const [value, setValue] = useState('')
+    const [images, setImages] = useState([]);
+    const [error, setError] = useState("");
+    const [success, setSuccess] = useState('');
+
+    const navigate = useNavigate()
+
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+        const formData = new FormData(e.target);
+        const inputs = Object.fromEntries(formData);
+
+        try {
+            const res = await apiRequest.post('/posts', {
+                postData: {
+                    title: inputs.title,
+                    price: parseInt(inputs.price),
+                    address: inputs.address,
+                    city: inputs.city,
+                    bedroom: parseInt(inputs.bedroom),
+                    bathroom: parseInt(inputs.bathroom),
+                    type: inputs.type,
+                    property: inputs.property,
+                    latitude: toString(inputs.latitude),
+                    longitude: toString(inputs.longitude),
+                    images: images,
+                },
+                postDetail: {
+                    desc: value,
+                    utilities: inputs.utilities,
+                    pet: inputs.pet,
+                    income: inputs.income,
+                    size: parseInt(inputs.size),
+                    school: parseInt(inputs.school),
+                    bus: parseInt(inputs.bus),
+                    restaurant: parseInt(inputs.restaurant),
+                },
+            });
+            setSuccess('Post added successfully!');
+            setError('');
+            navigate(`/${res.data.id}`);
+        } catch (error) {
+            console.error(error); // Debugging purpose
+            const errorMessage = error?.response?.data?.message || error?.message || "An error occurred. Please try again.";
+            setError(errorMessage); // Set error message as a string
+        }
+    };
+
     return (
         <div className="newPostPage">
             <div className="formContainer">
                 <h1>Add new Post</h1>
                 <div className="wrapper">
-                    <form>
+                    <form onSubmit={handleSubmit}>
                         <div className="item">
                             <label htmlFor="title">Title</label>
                             <input id="title" name="title" type="text" />
@@ -48,20 +102,20 @@ const newPostPage = () => {
                         <div className="item">
                             <label htmlFor="type">Type</label>
                             <select name="type">
-                                <option value="rent" defaultChecked>
+                                <option value="Rent" defaultChecked>
                                     Rent
                                 </option>
-                                <option value="buy">Buy</option>
+                                <option value="Buy">Buy</option>
                             </select>
                         </div>
                         <div className="item">
                             <label htmlFor="type">Property</label>
                             <select name="property">
-                                <option value="apartment">Apartment</option>
-                                <option value="house">House</option>
-                                <option value="office">Office</option>
-                                <option value="villa">Villa</option>
-                                <option value="land">Land</option>
+                                <option value="Apartment">Apartment</option>
+                                <option value="House">House</option>
+                                <option value="Office">Office</option>
+                                <option value="Villa">Villa</option>
+                                <option value="Land">Land</option>
                             </select>
                         </div>
 
@@ -106,9 +160,30 @@ const newPostPage = () => {
                             <input min={0} id="restaurant" name="restaurant" type="number" />
                         </div>
                         <button className="sendButton">Add</button>
+                        {error && <span className="error">{error}</span>}
+                        {success && <span className="success">{success}</span>}
 
                     </form>
                 </div>
+            </div>
+
+            <div className="sideContainer">
+                {images.map((image, index) => (
+                    <img key={index} src={image} alt="uploaded" />
+                ))}
+                <CloudinaryUploadWidget
+                    uwConfig={
+                        {
+                            cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+                            uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
+                            folder: 'posts',
+                            cropping: true,
+                            multiple: true,
+                            maxImageFileSize: 2000000,
+                        }
+                    }
+                    setState={setImages}
+                />
             </div>
         </div>
     )

@@ -4,13 +4,13 @@ import bcrypt from "bcrypt";
 // get all users 
 export const getUsers = async (req, res) => {
     try {
-        const users = await prisma.user.findMany();
-        res.status(200).json(users);
-    } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: 'Failed to get users' });
+      const users = await prisma.user.findMany();
+      res.status(200).json(users);
+    } catch (err) {
+      console.log(err);
+      res.status(500).json({ message: "Failed to get users!" });
     }
-}
+  };
 
 
 // get user by id
@@ -50,18 +50,25 @@ export const updateUser = async (req, res) => {
         const updateUser = await prisma.user.update({
             where: { id },
             data: {
-                ...inputs, 
+                ...inputs,
                 ...(updatedPassword && { password: updatedPassword }), // if updatedPassword is not null, add password to data
                 ...(avatar && { avatar })
             }
         });
 
-        const { password:userPassword , ...rest } = updateUser;
+        const { password: userPassword, ...rest } = updateUser;
 
         res.status(200).json(rest);
     } catch (error) {
-        console.log(error);
-        res.status(500).json({ message: 'Failed to update user' });
+
+        if (error.code === 'P2002') {
+            // console.error("Email already exists!");
+            res.status(400).json({ message: 'Email already exists!' });
+            // Handle the duplicate email case, e.g., return a user-friendly error message
+        } else {
+            // console.error(error);
+            res.status(500).json({ message: 'Failed to update user' });
+        }
 
     }
 }
@@ -85,5 +92,103 @@ export const deleteUser = async (req, res) => {
     } catch (error) {
         console.log(error);
         res.status(500).json({ message: 'Failed to delete user' });
+    }
+}
+
+// save post
+export const savePost = async (req, res) => {
+    const postId = req.body.postId;
+    const tokenUserId = req.userId;
+
+    try {
+        const savedPost = await prisma.savedPost.findUnique({
+            where: {
+                userId_postId: {
+                    userId: tokenUserId,
+                    postId,
+                }
+            }
+        });
+
+        if (savedPost) {
+            await prisma.savedPost.delete({
+                where: {
+                    id: savedPost.id,
+                }
+            });
+            res.status(200).json({ message: "Post removed from the saved list" });
+        } else {
+            await prisma.savedPost.create({
+                data: {
+                    postId,
+                    userId: tokenUserId
+                }
+            });
+            res.status(200).json({ message: "Post saved successfully" });
+        }
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({
+            message: "Failed to save post",
+            error: error.message
+        });
+    }
+}
+
+
+export const profilePosts = async (req, res) => {
+    const tokenUserId = req.userId;
+    // console.log("User ID from token:", tokenUserId);
+
+    const isValidObjectId = /^[0-9a-fA-F]{24}$/.test(tokenUserId);
+    if (!isValidObjectId) {
+        return res.status(400).json({ message: "Invalid User ID format" });
+    }
+
+
+    try {
+        const userPosts = await prisma.post.findMany({
+            where: { userId: tokenUserId }
+        });
+
+        const saved = await prisma.savedPost.findMany({
+            where: { userId: tokenUserId },
+            include: {
+                post: true
+            }
+        });
+        const savedPosts = saved.map(item => item.post);
+        res.status(200).json({ userPosts, savedPosts });
+
+    } catch (error) {
+        console.log(error);
+        res.status(500).json({ message: 'Failed to get profile posts' });
+    }
+}
+
+
+export const getNotificationNumber = async (req, res) => {
+    const tokenUserId = req.userId;
+
+    try {
+        const number = await prisma.chat.count({
+            where:{
+                userIDs:{
+                    hasSome:[tokenUserId],
+                },
+                NOT:{
+                    seenBy:{
+                        hasSome:[tokenUserId]
+                    }
+                }
+            }
+        })
+        res.status(200).json(number);
+    } catch (error) {
+        res.status(500).json({
+            message:"failed to get notification",
+            error:error.message
+        })
     }
 }

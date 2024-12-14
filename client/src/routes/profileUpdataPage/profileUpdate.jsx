@@ -10,8 +10,9 @@ import CloudinaryUploadWidget from '../../components/uploadWidget/uploadWidget'
 const profileUpdate = () => {
 
     const [error, setError] = useState("")
+    const [success, setSuccess] = useState("")
     const { currentUser, updateUser } = useContext(AuthContext)
-    const [avatar, setAvatar] = useState(currentUser.avatar)
+    const [avatar, setAvatar] = useState([])
 
     const navigate = useNavigate()
 
@@ -29,11 +30,14 @@ const profileUpdate = () => {
             });
             updateUser(res.data)
             navigate('/profile')
+            setSuccess('Profile updated successfully')
+            setError('')
             // console.log(currentUser)
             // console.log(res.data)
         } catch (error) {
-            console.log(error)
-            setError(error.response.data.message)
+            // console.log(error)
+            const errorMessage = error?.response?.data?.message || error?.message || "An error occurred. Please try again.";
+            setError(errorMessage); // Set error message as a string
         }
     }
 
@@ -65,25 +69,26 @@ const profileUpdate = () => {
                         <input type="password" id="password" placeholder="password" />
                     </div>
                     <button type='submit'>Update</button>
-                    {error && <div className="error">{error}</div>}
+                    {error && <span className="error">{error}</span>}
+                    {success && <span className="success">{success}</span>}
                 </form>
             </div>
             <div className="sideContainer">
                 <img
-                    src={ avatar || "/no-avatar.jpg"}
+                    src={avatar[0] || currentUser.avatar || "/no-avatar.jpg"}
                     alt=""
                     className='avatar'
                 />
-                <CloudinaryUploadWidget 
-                uwConfig={{
-                    cloudName: 'dw6nx71fd',
-                    uploadPreset: 'Real-estate',
-                    multiple: false,
-                    folder: 'avatars',
-                    maxImageFileSize: 1000000,
-                    cropping: true,
-                }}
-                setAvatar={setAvatar}
+                <CloudinaryUploadWidget
+                    uwConfig={{
+                        cloudName: import.meta.env.VITE_CLOUDINARY_CLOUD_NAME,
+                        uploadPreset: import.meta.env.VITE_CLOUDINARY_UPLOAD_PRESET,
+                        multiple: false,
+                        folder: 'avatars',
+                        maxImageFileSize: 1000000,
+                        cropping: true,
+                    }}
+                    setState={setAvatar}
                 />
             </div>
         </div>

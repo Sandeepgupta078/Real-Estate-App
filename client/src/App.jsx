@@ -1,22 +1,26 @@
+import React from "react";
 import {
   createBrowserRouter,
   RouterProvider,
 } from "react-router-dom";
+// import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 
-
-
-import { Layout, RequireAuth } from './routes/layout/layout'
-import HomePage from './routes/homepage/homepage'
-import ListPage from './routes/listPage/listPage'
-import SinglePage from './routes/singlePage/singlePage'
+import { Layout, RequireAuth } from './routes/layout/layout';
+import HomePage from './routes/homepage/homepage';
+import ListPage from './routes/listPage/listPage';
+import SinglePage from './routes/singlePage/singlePage';
 import ProfilePage from "./routes/profilePage/profilePage";
 import Register from "./routes/register/register";
 import Login from "./routes/Login/Login";
 import ProfileUpdatePage from "./routes/profileUpdataPage/profileUpdate";
 import NewPostPage from "./routes/newPostPage/newPostPage";
+import { listPageLoader, profilePageLoader, singlePageLoader } from "./lib/loaders";
+import ErrorBoundary from "./components/ErrorBoundary/ErrorBoundary";
+
+// Create a QueryClient instance
+// const queryClient = new QueryClient();
 
 function App() {
-
   const router = createBrowserRouter([
     {
       path: "/",
@@ -29,10 +33,14 @@ function App() {
         {
           path: "/list",
           element: <ListPage />,
+          loader: listPageLoader, 
+          errorElement: <ErrorBoundary />,
         },
         {
           path: "/:id",
           element: <SinglePage />,
+          loader: singlePageLoader, 
+          errorElement: <ErrorBoundary />,
         },
         {
           path: "/register",
@@ -51,6 +59,8 @@ function App() {
         {
           path: "/profile",
           element: <ProfilePage />,
+          loader:profilePageLoader,
+          errorElement: <ErrorBoundary />,
         },
         {
           path: "/profile/update",
@@ -62,12 +72,13 @@ function App() {
         },
       ]
     }
-  ]
-  );
+  ]);
 
   return (
-    <RouterProvider router={router} />
-  )
+    // <QueryClientProvider client={queryClient}>
+      <RouterProvider router={router} />
+    // </QueryClientProvider>
+  );
 }
 
-export default App
+export default App;

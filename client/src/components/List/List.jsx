@@ -1,16 +1,16 @@
-import React from 'react'
-import './List.scss'
-import {listData} from '../../lib/data'
-import Card from '../card/card'
+import React from 'react';
+import './List.scss';
+import Card from '../card/card';
 
-const List = () => {
+const List = ({posts}) => {
+
   return (
     <div className='list'>
-        {listData.map((item) => (
-            <Card key={item.id} item={item} />
-        ))}
+      {posts.map((item) => (
+        <Card key={item.id} item={item} />
+      ))}
     </div>
-  )
-}
+  );
+};
 
-export default List
+export default List;
